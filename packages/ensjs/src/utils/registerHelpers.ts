@@ -1,5 +1,5 @@
 import {
-  encodeAbiParameters,
+  encodePacked,
   keccak256,
   labelhash,
   pad,
@@ -8,16 +8,8 @@ import {
   type Address,
   type Hex,
 } from 'viem'
-import {
-  CampaignReferenceTooLargeError,
-  ResolverAddressRequiredError,
-} from '../errors/utils.js'
+import { CampaignReferenceTooLargeError } from '../errors/utils.js'
 import { EMPTY_ADDRESS } from './consts.js'
-import { encodeFuses, type EncodeChildFusesInputObject } from './fuses.js'
-import {
-  generateRecordCallArray,
-  type RecordOptions,
-} from './generateRecordCallArray.js'
 import { namehash } from './normalise.js'
 
 export type RegistrationParameters = {
@@ -32,11 +24,9 @@ export type RegistrationParameters = {
   /** Custom resolver address, defaults to current public resolver deployment */
   resolverAddress?: Address
   /** Records to set upon registration */
-  records?: RecordOptions
-  /** Sets primary name upon registration */
+  resolvedAddress?: Address
+  /** Whether to set Reverse Record or not */
   reverseRecord?: boolean
-  /** Fuses to set upon registration */
-  fuses?: EncodeChildFusesInputObject
 }
 
 export type CommitmentTuple = [
@@ -45,9 +35,8 @@ export type CommitmentTuple = [
   duration: bigint,
   secret: Hex,
   resolver: Address,
-  data: Hex[],
+  resolvedAddress: Address,
   reverseRecord: boolean,
-  ownerControlledFuses: number,
 ]
 
 export type RegistrationTuple = [
@@ -56,9 +45,8 @@ export type RegistrationTuple = [
   duration: bigint,
   secret: Hex,
   resolver: Address,
-  data: Hex[],
+  resolvedAddress: Address,
   reverseRecord: boolean,
-  ownerControlledFuses: number,
 ]
 
 const cryptoRef =
@@ -98,44 +86,11 @@ export const makeCommitmentTuple = ({
   owner,
   duration,
   resolverAddress = EMPTY_ADDRESS,
-  records: { coins = [], ...records } = { texts: [], coins: [] },
-  reverseRecord,
-  fuses,
+  resolvedAddress = EMPTY_ADDRESS,
+  reverseRecord = false,
   secret,
 }: RegistrationParameters): CommitmentTuple => {
   const labelHash = labelhash(name.split('.')[0])
-  const hash = namehash(name)
-  const fuseData = fuses
-    ? encodeFuses({ restriction: 'child', input: fuses })
-    : 0
-
-  if (
-    reverseRecord &&
-    !coins.find(
-      (c) =>
-        (typeof c.coin === 'string' && c.coin.toLowerCase() === 'eth') ||
-        (typeof c.coin === 'string' ? parseInt(c.coin) === 60 : c.coin === 60),
-    )
-  ) {
-    coins.push({ coin: 60, value: owner })
-  }
-
-  const data = records
-    ? generateRecordCallArray({ namehash: hash, coins, ...records })
-    : []
-
-  if (data.length > 0 && resolverAddress === EMPTY_ADDRESS)
-    throw new ResolverAddressRequiredError({
-      data: {
-        name,
-        owner,
-        duration,
-        resolverAddress,
-        records,
-        reverseRecord,
-        fuses,
-      },
-    })
 
   return [
     labelHash,
@@ -143,9 +98,8 @@ export const makeCommitmentTuple = ({
     BigInt(duration),
     secret,
     resolverAddress,
-    data,
-    !!reverseRecord,
-    fuseData,
+    resolvedAddress,
+    reverseRecord,
   ]
 }
 
@@ -160,18 +114,25 @@ export const makeRegistrationTuple = (
 
 export const makeCommitmentFromTuple = (params: CommitmentTuple): Hex => {
   return keccak256(
-    encodeAbiParameters(
+    encodePacked(
       [
-        { name: 'name', type: 'bytes32' },
-        { name: 'owner', type: 'address' },
-        { name: 'duration', type: 'uint256' },
-        { name: 'secret', type: 'bytes32' },
-        { name: 'resolver', type: 'address' },
-        { name: 'data', type: 'bytes[]' },
-        { name: 'reverseRecord', type: 'bool' },
-        { name: 'ownerControlledFuses', type: 'uint16' },
+        'bytes32',
+        'address',
+        'uint256',
+        'address',
+        'address',
+        'bytes32',
+        'bool',
       ],
-      params,
+      [
+        params[0],
+        params[1],
+        params[2],
+        params[4],
+        params[5],
+        params[3],
+        params[6],
+      ],
     ),
   )
 }

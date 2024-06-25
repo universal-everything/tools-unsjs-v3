@@ -1,10 +1,6 @@
-import type { BaseError, Hex } from 'viem'
+import type { Hex } from 'viem'
 import type { ClientWithEns } from '../../contracts/consts.js'
-import type {
-  GenericPassthrough,
-  Prettify,
-  SimpleTransactionRequest,
-} from '../../types.js'
+import type { Prettify, SimpleTransactionRequest } from '../../types.js'
 import {
   generateFunction,
   type GeneratedFunction,
@@ -13,7 +9,7 @@ import _getAbi, {
   type InternalGetAbiParameters,
   type InternalGetAbiReturnType,
 } from './_getAbi.js'
-import universalWrapper from './universalWrapper.js'
+import { getChainContractAddress } from '../../contracts/getChainContractAddress.js'
 
 export type GetAbiRecordParameters = Prettify<
   InternalGetAbiParameters & {
@@ -26,35 +22,23 @@ export type GetAbiRecordReturnType = Prettify<InternalGetAbiReturnType>
 
 const encode = (
   client: ClientWithEns,
-  {
-    name,
-    supportedContentTypes,
-    gatewayUrls,
-  }: Omit<GetAbiRecordParameters, 'strict'>,
+  { name, supportedContentTypes }: Omit<GetAbiRecordParameters, 'strict'>,
 ): SimpleTransactionRequest => {
   const prData = _getAbi.encode(client, { name, supportedContentTypes })
-  return universalWrapper.encode(client, {
-    name,
-    data: prData.data,
-    gatewayUrls,
+  prData.to = getChainContractAddress({
+    client,
+    contract: 'ensUniversalResolver',
   })
+  return prData
 }
 
 const decode = async (
   client: ClientWithEns,
-  data: Hex | BaseError,
-  passthrough: GenericPassthrough,
-  {
-    strict,
-    gatewayUrls,
-  }: Pick<GetAbiRecordParameters, 'strict' | 'gatewayUrls'>,
+  data: Hex,
+  { strict }: Pick<GetAbiRecordParameters, 'strict' | 'gatewayUrls'>,
 ): Promise<GetAbiRecordReturnType> => {
-  const urData = await universalWrapper.decode(client, data, passthrough, {
-    strict,
-    gatewayUrls,
-  })
-  if (!urData) return null
-  return _getAbi.decode(client, urData.data, { strict })
+  if (!data) return null
+  return _getAbi.decode(client, data, { strict })
 }
 
 type BatchableFunctionObject = GeneratedFunction<typeof encode, typeof decode>

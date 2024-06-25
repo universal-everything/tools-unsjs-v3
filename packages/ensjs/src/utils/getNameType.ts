@@ -2,7 +2,7 @@ import type { NameType } from '../types.js'
 
 export const getNameType = (name: string): NameType => {
   const labels = name.split('.')
-  const isDotEth = labels[labels.length - 1] === 'eth'
+  const isDotEth = labels[labels.length - 1] === 'lyx'
 
   if (labels.length === 0) return 'root'
   if (labels.length === 1) {

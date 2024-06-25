@@ -1,4 +1,4 @@
-import type { Account, Client, Transport } from 'viem'
+import type { Account, Client, Transport, Hex } from 'viem'
 import type { ChainWithEns } from '../../contracts/consts.js'
 import batch, {
   type BatchParameters,
@@ -48,14 +48,10 @@ import getTextRecord, {
   type GetTextRecordParameters,
   type GetTextRecordReturnType,
 } from '../../functions/public/getTextRecord.js'
-import getWrapperData, {
-  type GetWrapperDataParameters,
-  type GetWrapperDataReturnType,
-} from '../../functions/public/getWrapperData.js'
-import getWrapperName, {
-  type GetWrapperNameParameters,
-  type GetWrapperNameReturnType,
-} from '../../functions/public/getWrapperName.js'
+import getSupportedInterfaces, {
+  type GetSupportedInterfacesParameters,
+  type GetSupportedInterfacesReturnType,
+} from '../../functions/public/getSupportedInterfaces.js'
 
 export type EnsPublicActions = {
   /**
@@ -342,45 +338,13 @@ export type EnsPublicActions = {
     gatewayUrls,
     strict,
   }: GetTextRecordParameters) => Promise<GetTextRecordReturnType>
-  /**
-   * Gets the wrapper data for a name.
-   * @param parameters - {@link GetWrapperDataParameters}
-   * @returns Wrapper data object, or null if name is not wrapped. {@link GetWrapperDataReturnType}
-   *
-   * @example
-   * import { createPublicClient, http } from 'viem'
-   * import { mainnet } from 'viem/chains'
-   * import { addEnsContracts, ensPublicActions } from '@ensdomains/ensjs'
-   *
-   * const client = createPublicClient({
-   *   chain: addEnsContracts(mainnet),
-   *   transport: http(),
-   * }).extend(ensPublicActions)
-   * const result = await client.getWrapperData({ name: 'ilikelasagna.eth' })
-   */
-  getWrapperData: ({
-    name,
-  }: GetWrapperDataParameters) => Promise<GetWrapperDataReturnType>
-  /**
-   * Gets the full name for a name with unknown labels from the NameWrapper.
-   * @param parameters - {@link GetWrapperNameParameters}
-   * @returns Full name, or null if name was not found. {@link GetWrapperNameReturnType}
-   *
-   * @example
-   * import { createPublicClient, http } from 'viem'
-   * import { mainnet } from 'viem/chains'
-   * import { addEnsContracts, ensPublicActions } from '@ensdomains/ensjs'
-   *
-   * const client = createPublicClient({
-   *   chain: addEnsContracts(mainnet),
-   *   transport: http(),
-   * }).extend(ensPublicActions)
-   * const result = await client.getWrapperName({ name: '[4ca938ec1b323ca71c4fb47a712abb68cce1cabf39ea4d6789e42fbc1f95459b].eth' })
-   * // wrapped.eth
-   */
-  getWrapperName: ({
-    name,
-  }: GetWrapperNameParameters) => Promise<GetWrapperNameReturnType>
+
+  getSupportedInterfaces: ({
+    address,
+    interfaces,
+  }: GetSupportedInterfacesParameters<Hex[]>) => Promise<
+    GetSupportedInterfacesReturnType<Hex[]>
+  >
 }
 
 /**
@@ -417,6 +381,6 @@ export const ensPublicActions = <
   getRecords: (parameters) => getRecords(client, parameters),
   getResolver: (parameters) => getResolver(client, parameters),
   getTextRecord: (parameters) => getTextRecord(client, parameters),
-  getWrapperData: (parameters) => getWrapperData(client, parameters),
-  getWrapperName: (parameters) => getWrapperName(client, parameters),
+  getSupportedInterfaces: (parameters) =>
+    getSupportedInterfaces(client, parameters),
 })

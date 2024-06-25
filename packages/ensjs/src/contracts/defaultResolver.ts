@@ -5,32 +5,16 @@ export const publicResolverSingleAddrSnippet = [
         name: 'node',
         type: 'bytes32',
       },
-    ],
-    name: 'addr',
-    outputs: [
       {
-        name: '',
-        type: 'address',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-] as const
-
-export const publicResolverNameSnippet = [
-  {
-    inputs: [
-      {
-        name: 'node',
+        name: 'dataKey',
         type: 'bytes32',
       },
     ],
-    name: 'name',
+    name: 'getData',
     outputs: [
       {
-        name: '',
-        type: 'string',
+        name: 'output',
+        type: 'bytes',
       },
     ],
     stateMutability: 'view',
@@ -46,14 +30,14 @@ export const publicResolverMultiAddrSnippet = [
         type: 'bytes32',
       },
       {
-        name: 'coinType',
-        type: 'uint256',
+        name: 'dataKey',
+        type: 'bytes32',
       },
     ],
-    name: 'addr',
+    name: 'getData',
     outputs: [
       {
-        name: '',
+        name: 'output',
         type: 'bytes',
       },
     ],
@@ -70,15 +54,15 @@ export const publicResolverTextSnippet = [
         type: 'bytes32',
       },
       {
-        name: 'key',
-        type: 'string',
+        name: 'dataKey',
+        type: 'bytes32',
       },
     ],
-    name: 'text',
+    name: 'getData',
     outputs: [
       {
-        name: '',
-        type: 'string',
+        name: 'output',
+        type: 'bytes',
       },
     ],
     stateMutability: 'view',
@@ -90,16 +74,18 @@ export const publicResolverContenthashSnippet = [
   {
     inputs: [
       {
-        internalType: 'bytes32',
         name: 'node',
         type: 'bytes32',
       },
+      {
+        name: 'dataKey',
+        type: 'bytes32',
+      },
     ],
-    name: 'contenthash',
+    name: 'getData',
     outputs: [
       {
-        internalType: 'bytes',
-        name: '',
+        name: 'output',
         type: 'bytes',
       },
     ],
@@ -116,18 +102,14 @@ export const publicResolverAbiSnippet = [
         type: 'bytes32',
       },
       {
-        name: 'contentTypes',
-        type: 'uint256',
+        name: 'dataKey',
+        type: 'bytes32',
       },
     ],
-    name: 'ABI',
+    name: 'getData',
     outputs: [
       {
-        name: '',
-        type: 'uint256',
-      },
-      {
-        name: '',
+        name: 'output',
         type: 'bytes',
       },
     ],
@@ -248,7 +230,7 @@ export const publicResolverMulticallSnippet = [
         type: 'bytes[]',
       },
     ],
-    name: 'multicall',
+    name: 'batchCalls',
     outputs: [
       {
         name: 'results',
@@ -256,34 +238,6 @@ export const publicResolverMulticallSnippet = [
       },
     ],
     stateMutability: 'nonpayable',
-    type: 'function',
-  },
-] as const
-
-export const publicResolverMulticallWithResolverSnippet = [
-  {
-    inputs: [
-      {
-        name: 'node',
-        type: 'bytes32',
-      },
-      {
-        name: 'data',
-        type: 'bytes[]',
-      },
-    ],
-    name: 'multicallWithResolver',
-    outputs: [
-      {
-        name: 'resolver',
-        type: 'address',
-      },
-      {
-        name: 'results',
-        type: 'bytes[]',
-      },
-    ],
-    stateMutability: 'view',
     type: 'function',
   },
 ] as const

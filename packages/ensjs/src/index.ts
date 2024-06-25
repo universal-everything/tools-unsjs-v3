@@ -29,15 +29,15 @@ export {
 export { addEnsContracts } from './contracts/addEnsContracts.js'
 export { BaseError } from './errors/base.js'
 export { NoChainError, UnsupportedChainError } from './errors/contracts.js'
-export {
-  DnsDnssecVerificationFailedError,
-  DnsDnssecWildcardExpansionError,
-  DnsInvalidAddressChecksumError,
-  DnsInvalidTxtRecordError,
-  DnsNewerRecordTypeAvailableError,
-  DnsNoTxtRecordError,
-  DnsResponseStatusError,
-} from './errors/dns.js'
+// export {
+//   DnsDnssecVerificationFailedError,
+//   DnsDnssecWildcardExpansionError,
+//   DnsInvalidAddressChecksumError,
+//   DnsInvalidTxtRecordError,
+//   DnsNewerRecordTypeAvailableError,
+//   DnsNoTxtRecordError,
+//   DnsResponseStatusError,
+// } from './errors/dns.js'
 export {
   AdditionalParameterSpecifiedError,
   InvalidContractTypeError,

@@ -12,6 +12,7 @@
   "exclude": [],
   "references": [{ "path": "./tsconfig.node.json" }],
   "compilerOptions": {
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   }
 }

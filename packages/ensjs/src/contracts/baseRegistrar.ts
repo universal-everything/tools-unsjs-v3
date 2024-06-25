@@ -4,12 +4,14 @@ import {
   erc721SafeTransferFromWithDataSnippet,
 } from './erc721.js'
 
+import { lsp8TransferSnippet } from './lsp8.js'
+
 export const baseRegistrarAvailableSnippet = [
   {
     inputs: [
       {
         name: 'id',
-        type: 'uint256',
+        type: 'bytes32',
       },
     ],
     name: 'available',
@@ -29,7 +31,7 @@ export const baseRegistrarNameExpiresSnippet = [
     inputs: [
       {
         name: 'id',
-        type: 'uint256',
+        type: 'bytes32',
       },
     ],
     name: 'nameExpires',
@@ -81,6 +83,8 @@ export const baseRegistrarReclaimSnippet = [
 export const baseRegistrarSafeTransferFromSnippet = [
   ...erc721SafeTransferFromSnippet,
 ] as const
+
+export const baseRegistrarTransfeSnippet = [...lsp8TransferSnippet] as const
 
 export const baseRegistrarSafeTransferFromWithDataSnippet = [
   ...erc721SafeTransferFromWithDataSnippet,

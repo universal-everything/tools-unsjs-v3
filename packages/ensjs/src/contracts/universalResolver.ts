@@ -207,3 +207,26 @@ export const universalResolverFindResolverSnippet = [
     type: 'function',
   },
 ] as const
+
+export const universalResolverReverseNameWithRecords = {
+  inputs: [
+    {
+      name: 'node',
+      type: 'bytes32',
+    },
+  ],
+  name: 'nameWithRecordInfo',
+  outputs: [
+    { type: 'string', name: 'resolvedName' },
+    { type: 'address', name: 'reverseResolver' },
+    { type: 'address', name: 'resolver' },
+    { type: 'address', name: 'resolvedAddress' },
+  ],
+  stateMutability: 'view',
+  type: 'function',
+} as const
+
+export const universalResolverReverseNameWithRecordsSnippet = [
+  ...universalResolverErrors,
+  universalResolverReverseNameWithRecords,
+] as const

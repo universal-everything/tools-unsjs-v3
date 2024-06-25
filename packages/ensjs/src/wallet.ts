@@ -54,13 +54,13 @@ export {
   type SetAddressRecordParameters,
   type SetAddressRecordReturnType,
 } from './functions/wallet/setAddressRecord.js'
-export {
-  default as setChildFuses,
-  type SetChildFusesDataParameters,
-  type SetChildFusesDataReturnType,
-  type SetChildFusesParameters,
-  type SetChildFusesReturnType,
-} from './functions/wallet/setChildFuses.js'
+// export {
+//   default as setChildFuses,
+//   type SetChildFusesDataParameters,
+//   type SetChildFusesDataReturnType,
+//   type SetChildFusesParameters,
+//   type SetChildFusesReturnType,
+// } from './functions/wallet/setChildFuses.js'
 export {
   default as setContentHashRecord,
   type SetContentHashRecordDataParameters,
@@ -68,13 +68,13 @@ export {
   type SetContentHashRecordParameters,
   type SetContentHashRecordReturnType,
 } from './functions/wallet/setContentHashRecord.js'
-export {
-  default as setFuses,
-  type SetFusesDataParameters,
-  type SetFusesDataReturnType,
-  type SetFusesParameters,
-  type SetFusesReturnType,
-} from './functions/wallet/setFuses.js'
+// export {
+//   default as setFuses,
+//   type SetFusesDataParameters,
+//   type SetFusesDataReturnType,
+//   type SetFusesParameters,
+//   type SetFusesReturnType,
+// } from './functions/wallet/setFuses.js'
 export {
   default as setPrimaryName,
   type SetPrimaryNameDataParameters,
@@ -110,17 +110,17 @@ export {
   type TransferNameParameters,
   type TransferNameReturnType,
 } from './functions/wallet/transferName.js'
-export {
-  default as unwrapName,
-  type UnwrapNameDataParameters,
-  type UnwrapNameDataReturnType,
-  type UnwrapNameParameters,
-  type UnwrapNameReturnType,
-} from './functions/wallet/unwrapName.js'
-export {
-  default as wrapName,
-  type WrapNameDataParameters,
-  type WrapNameDataReturnType,
-  type WrapNameParameters,
-  type WrapNameReturnType,
-} from './functions/wallet/wrapName.js'
+// export {
+//   default as unwrapName,
+//   type UnwrapNameDataParameters,
+//   type UnwrapNameDataReturnType,
+//   type UnwrapNameParameters,
+//   type UnwrapNameReturnType,
+// } from './functions/wallet/unwrapName.js'
+// export {
+//   default as wrapName,
+//   type WrapNameDataParameters,
+//   type WrapNameDataReturnType,
+//   type WrapNameParameters,
+//   type WrapNameReturnType,
+// } from './functions/wallet/wrapName.js'

@@ -1,9 +1,9 @@
-export const erc721OwnerOfSnippet = [
+export const lsp8TokenOwnerOfSnippet = [
   {
     inputs: [
       {
         name: 'id',
-        type: 'bytes32',
+        type: 'uint256',
       },
     ],
     name: 'tokenOwnerOf',
@@ -18,7 +18,7 @@ export const erc721OwnerOfSnippet = [
   },
 ] as const
 
-export const erc721SafeTransferFromSnippet = [
+export const lsp8TransferSnippet = [
   {
     inputs: [
       {
@@ -31,37 +31,18 @@ export const erc721SafeTransferFromSnippet = [
       },
       {
         name: 'tokenId',
-        type: 'uint256',
-      },
-    ],
-    name: 'safeTransferFrom',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-] as const
-
-export const erc721SafeTransferFromWithDataSnippet = [
-  {
-    inputs: [
-      {
-        name: 'from',
-        type: 'address',
+        type: 'bytes32',
       },
       {
-        name: 'to',
-        type: 'address',
+        name: 'force',
+        type: 'bool',
       },
       {
-        name: 'tokenId',
-        type: 'uint256',
-      },
-      {
-        name: '_data',
+        name: 'data',
         type: 'bytes',
       },
     ],
-    name: 'safeTransferFrom',
+    name: 'transfer',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',

@@ -1,28 +1,19 @@
 import {
-  BaseError,
   decodeFunctionResult,
   encodeFunctionData,
   getAddress,
-  toHex,
+  namehash,
   type Address,
   type Hex,
 } from 'viem'
 import type { ClientWithEns } from '../../contracts/consts.js'
 import { getChainContractAddress } from '../../contracts/getChainContractAddress.js'
-import {
-  universalResolverReverseSnippet,
-  universalResolverReverseWithGatewaysSnippet,
-} from '../../contracts/universalResolver.js'
-import type {
-  GenericPassthrough,
-  TransactionRequestWithPassthrough,
-} from '../../types.js'
-import { checkSafeUniversalResolverData } from '../../utils/checkSafeUniversalResolverData.js'
+import { universalResolverReverseNameWithRecordsSnippet } from '../../contracts/universalResolver.js'
+import type { TransactionRequestWithPassthrough } from '../../types.js'
 import {
   generateFunction,
   type GeneratedFunction,
 } from '../../utils/generateFunction.js'
-import { packetToBytes } from '../../utils/hexEncodedName.js'
 import { normalise } from '../../utils/normalise.js'
 
 export type GetNameParameters = {
@@ -49,69 +40,39 @@ export type GetNameReturnType = {
 
 const encode = (
   client: ClientWithEns,
-  { address, gatewayUrls }: Omit<GetNameParameters, 'allowMismatch' | 'strict'>,
+  { address }: Omit<GetNameParameters, 'allowMismatch' | 'strict'>,
 ): TransactionRequestWithPassthrough => {
   const reverseNode = `${address.toLowerCase().substring(2)}.addr.reverse`
   const to = getChainContractAddress({
     client,
     contract: 'ensUniversalResolver',
   })
-  const args = [toHex(packetToBytes(reverseNode))] as const
+  const args = [namehash(reverseNode)] as const
 
   return {
     to,
-    ...(gatewayUrls?.length
-      ? {
-          data: encodeFunctionData({
-            abi: universalResolverReverseWithGatewaysSnippet,
-            functionName: 'reverse',
-            args: [...args, gatewayUrls] as const,
-          }),
-          passthrough: {
-            args: [...args, gatewayUrls],
-            address: to,
-          },
-        }
-      : {
-          data: encodeFunctionData({
-            abi: universalResolverReverseSnippet,
-            functionName: 'reverse',
-            args,
-          }),
-          passthrough: {
-            args,
-            address: to,
-          },
-        }),
+    data: encodeFunctionData({
+      abi: universalResolverReverseNameWithRecordsSnippet,
+      functionName: 'nameWithRecordInfo',
+      args,
+    }),
   }
 }
 
 const decode = async (
   _client: ClientWithEns,
-  data: Hex | BaseError,
-  passthrough: GenericPassthrough,
-  { address, allowMismatch, strict, gatewayUrls }: GetNameParameters,
+  data: Hex,
+  { address, allowMismatch, strict }: GetNameParameters,
 ): Promise<GetNameReturnType | null> => {
-  const isSafe = checkSafeUniversalResolverData(data, {
-    strict,
-    abi: gatewayUrls
-      ? universalResolverReverseWithGatewaysSnippet
-      : universalResolverReverseSnippet,
-    args: passthrough.args,
-    functionName: 'reverse',
-    address: passthrough.address,
-  })
-  if (!isSafe) return null
-
   try {
     const [
       unnormalisedName,
-      forwardResolvedAddress,
       reverseResolverAddress,
       resolverAddress,
+      forwardResolvedAddress,
     ] = decodeFunctionResult({
-      abi: universalResolverReverseSnippet,
-      functionName: 'reverse',
+      abi: universalResolverReverseNameWithRecordsSnippet,
+      functionName: 'nameWithRecordInfo',
       data,
     })
     if (!unnormalisedName) return null

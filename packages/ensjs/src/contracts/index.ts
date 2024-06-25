@@ -95,4 +95,5 @@ export {
   universalResolverResolveArraySnippet,
   universalResolverResolveSnippet,
   universalResolverReverseSnippet,
+  universalResolverReverseNameWithRecords,
 } from './universalResolver.js'

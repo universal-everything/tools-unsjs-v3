@@ -32,18 +32,10 @@ import setAddressRecord, {
   type SetAddressRecordParameters,
   type SetAddressRecordReturnType,
 } from '../../functions/wallet/setAddressRecord.js'
-import setChildFuses, {
-  type SetChildFusesParameters,
-  type SetChildFusesReturnType,
-} from '../../functions/wallet/setChildFuses.js'
 import setContentHashRecord, {
   type SetContentHashRecordParameters,
   type SetContentHashRecordReturnType,
 } from '../../functions/wallet/setContentHashRecord.js'
-import setFuses, {
-  type SetFusesParameters,
-  type SetFusesReturnType,
-} from '../../functions/wallet/setFuses.js'
 import setPrimaryName, {
   type SetPrimaryNameParameters,
   type SetPrimaryNameReturnType,
@@ -64,14 +56,6 @@ import transferName, {
   type TransferNameParameters,
   type TransferNameReturnType,
 } from '../../functions/wallet/transferName.js'
-import unwrapName, {
-  type UnwrapNameParameters,
-  type UnwrapNameReturnType,
-} from '../../functions/wallet/unwrapName.js'
-import wrapName, {
-  type WrapNameParameters,
-  type WrapNameReturnType,
-} from '../../functions/wallet/wrapName.js'
 
 export type EnsWalletActions<
   TChain extends ChainWithEns,
@@ -136,9 +120,7 @@ export type EnsWalletActions<
     duration,
     secret,
     resolverAddress,
-    records,
-    reverseRecord,
-    fuses,
+    resolvedAddress,
     ...txArgs
   }: CommitNameParameters<
     TChain,
@@ -252,9 +234,7 @@ export type EnsWalletActions<
     duration,
     secret,
     resolverAddress,
-    records,
-    reverseRecord,
-    fuses,
+    resolvedAddress,
     value,
     ...txArgs
   }: RegisterNameParameters<
@@ -374,40 +354,6 @@ export type EnsWalletActions<
     TChain
   >) => Promise<SetAddressRecordReturnType>
   /**
-   * Sets the fuses for a name as the parent.
-   * @param parameters - {@link SetChildFusesParameters}
-   * @returns Transaction hash. {@link SetChildFusesReturnType}
-   *
-   * @example
-   * import { createWalletClient, custom } from 'viem'
-   * import { mainnet } from 'viem/chains'
-   * import { addEnsContracts, ensWalletActions } from '@ensdomains/ensjs'
-   *
-   * const wallet = createWalletClient({
-   *   chain: addEnsContracts(mainnet),
-   *   transport: custom(window.ethereum),
-   * }).extend(ensWalletActions)
-   * const hash = await wallet.setChildFuses({
-   *   name: 'sub.ens.eth',
-   *   fuses: {
-   *     parent: {
-   *       named: ['PARENT_CANNOT_CONTROl'],
-   *     },
-   *   },
-   * })
-   * // 0x...
-   */
-  setChildFuses: ({
-    name,
-    fuses,
-    expiry,
-    ...txArgs
-  }: SetChildFusesParameters<
-    TChain,
-    TAccount,
-    TChain
-  >) => Promise<SetChildFusesReturnType>
-  /**
    * Sets the content hash record for a name on a resolver.
    * @param parameters - {@link SetContentHashRecordParameters}
    * @returns Transaction hash. {@link SetContentHashRecordReturnType}
@@ -438,37 +384,6 @@ export type EnsWalletActions<
     TAccount,
     TChain
   >) => Promise<SetContentHashRecordReturnType>
-  /**
-   * Sets the fuses for a name.
-   * @param parameters - {@link SetFusesParameters}
-   * @returns Transaction hash. {@link SetFusesReturnType}
-   *
-   * @example
-   * import { createWalletClient, custom } from 'viem'
-   * import { mainnet } from 'viem/chains'
-   * import { addEnsContracts, ensWalletActions } from '@ensdomains/ensjs'
-   *
-   * const wallet = createWalletClient({
-   *   chain: addEnsContracts(mainnet),
-   *   transport: custom(window.ethereum),
-   * }).extend(ensWalletActions)
-   * const hash = await wallet.setFuses({
-   *   name: 'sub.ens.eth',
-   *   fuses: {
-   *     named: ['CANNOT_TRANSFER'],
-   *   },
-   * })
-   * // 0x...
-   */
-  setFuses: ({
-    name,
-    fuses,
-    ...txArgs
-  }: SetFusesParameters<
-    TChain,
-    TAccount,
-    TChain
-  >) => Promise<SetFusesReturnType>
   /**
    * Sets a primary name for an address.
    * @param parameters - {@link SetPrimaryNameParameters}
@@ -637,70 +552,6 @@ export type EnsWalletActions<
     TAccount,
     TChain
   >) => Promise<TransferNameReturnType>
-  /**
-   * Unwraps a name.
-   * @param parameters - {@link UnwrapNameParameters}
-   * @returns Transaction hash. {@link UnwrapNameReturnType}
-   *
-   * @example
-   * import { createWalletClient, custom } from 'viem'
-   * import { mainnet } from 'viem/chains'
-   * import { addEnsContracts, ensWalletActions } from '@ensdomains/ensjs'
-   *
-   * const wallet = createWalletClient({
-   *   chain: addEnsContracts(mainnet),
-   *   transport: custom(window.ethereum),
-   * }).extend(ensWalletActions)
-   * const hash = await wallet.unwrapName({
-   *   name: 'example.eth',
-   *   newOwnerAddress: '0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7',
-   *   newRegistrantAddress: '0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7',
-   * })
-   * // 0x...
-   */
-  unwrapName: <TName extends string>({
-    name,
-    newOwnerAddress,
-    newRegistrantAddress,
-    ...txArgs
-  }: UnwrapNameParameters<
-    TName,
-    TChain,
-    TAccount,
-    TChain
-  >) => Promise<UnwrapNameReturnType>
-  /**
-   * Wraps a name.
-   * @param parameters - {@link WrapNameParameters}
-   * @returns Transaction hash. {@link WrapNameReturnType}
-   *
-   * @example
-   * import { createWalletClient, custom } from 'viem'
-   * import { mainnet } from 'viem/chains'
-   * import { addEnsContracts, ensWalletActions } from '@ensdomains/ensjs'
-   *
-   * const wallet = createWalletClient({
-   *   chain: addEnsContracts(mainnet),
-   *   transport: custom(window.ethereum),
-   * }).extend(ensWalletActions)
-   * const hash = await wallet.wrapName({
-   *   name: 'ens.eth',
-   *   newOwnerAddress: '0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7',
-   * })
-   * // 0x...
-   */
-  wrapName: <TName extends string>({
-    name,
-    newOwnerAddress,
-    fuses,
-    resolverAddress,
-    ...txArgs
-  }: WrapNameParameters<
-    TName,
-    TChain,
-    TAccount,
-    TChain
-  >) => Promise<WrapNameReturnType>
 }
 
 /**
@@ -732,15 +583,11 @@ export const ensWalletActions = <
   renewNames: (parameters) => renewNames(client, parameters),
   setAbiRecord: (parameters) => setAbiRecord(client, parameters),
   setAddressRecord: (parameters) => setAddressRecord(client, parameters),
-  setChildFuses: (parameters) => setChildFuses(client, parameters),
   setContentHashRecord: (parameters) =>
     setContentHashRecord(client, parameters),
-  setFuses: (parameters) => setFuses(client, parameters),
   setPrimaryName: (parameters) => setPrimaryName(client, parameters),
   setRecords: (parameters) => setRecords(client, parameters),
   setResolver: (parameters) => setResolver(client, parameters),
   setTextRecord: (parameters) => setTextRecord(client, parameters),
   transferName: (parameters) => transferName(client, parameters),
-  unwrapName: (parameters) => unwrapName(client, parameters),
-  wrapName: (parameters) => wrapName(client, parameters),
 })

@@ -1,1 +1,1 @@
-export type Endpoint = `https://${string}` | `http://${string}`
+// export type Endpoint = `https://${string}` | `http://${string}`

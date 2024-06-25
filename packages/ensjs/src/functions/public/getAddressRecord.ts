@@ -1,10 +1,7 @@
-import type { BaseError, Hex } from 'viem'
+import { BaseError, type Hex } from 'viem'
 import type { ClientWithEns } from '../../contracts/consts.js'
-import type {
-  GenericPassthrough,
-  Prettify,
-  SimpleTransactionRequest,
-} from '../../types.js'
+import type { Prettify, SimpleTransactionRequest } from '../../types.js'
+import { getChainContractAddress } from '../../contracts/getChainContractAddress.js'
 import {
   generateFunction,
   type GeneratedFunction,
@@ -13,7 +10,6 @@ import _getAddr, {
   type InternalGetAddrParameters,
   type InternalGetAddrReturnType,
 } from './_getAddr.js'
-import universalWrapper from './universalWrapper.js'
 
 export type GetAddressRecordParameters = Prettify<
   InternalGetAddrParameters & {
@@ -26,36 +22,29 @@ export type GetAddressRecordReturnType = Prettify<InternalGetAddrReturnType>
 
 const encode = (
   client: ClientWithEns,
-  {
-    name,
-    coin,
-    gatewayUrls,
-  }: Omit<GetAddressRecordParameters, 'strict' | 'bypassFormat'>,
+  { name, coin }: Omit<GetAddressRecordParameters, 'strict' | 'bypassFormat'>,
 ): SimpleTransactionRequest => {
   const prData = _getAddr.encode(client, { name, coin })
-  return universalWrapper.encode(client, {
-    name,
-    data: prData.data,
-    gatewayUrls,
+  prData.to = getChainContractAddress({
+    client,
+    contract: 'ensUniversalResolver',
   })
+  return prData
 }
 
 const decode = async (
   client: ClientWithEns,
   data: Hex | BaseError,
-  passthrough: GenericPassthrough,
   {
     coin,
     strict,
-    gatewayUrls,
   }: Pick<GetAddressRecordParameters, 'coin' | 'strict' | 'gatewayUrls'>,
 ): Promise<GetAddressRecordReturnType> => {
-  const urData = await universalWrapper.decode(client, data, passthrough, {
+  if (data instanceof BaseError) return null
+  return _getAddr.decode(client, data, {
+    coin,
     strict,
-    gatewayUrls,
-  })
-  if (!urData) return null
-  return _getAddr.decode(client, urData.data, { coin, strict })
+  }) as Promise<GetAddressRecordReturnType>
 }
 
 type BatchableFunctionObject = GeneratedFunction<typeof encode, typeof decode>

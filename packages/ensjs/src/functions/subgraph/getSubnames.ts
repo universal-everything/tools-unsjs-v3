@@ -9,7 +9,6 @@ import type { DomainFilter } from './filters.js'
 import {
   domainDetailsWithoutParentFragment,
   registrationDetailsFragment,
-  wrappedDomainDetailsFragment,
   type SubgraphDomain,
 } from './fragments.js'
 import { makeNameObject, type Name } from './utils.js'
@@ -62,7 +61,7 @@ const getOrderByFilter = ({
       let lastExpiryDate = lastDomain.expiryDate?.value
         ? lastDomain.expiryDate.value / 1000
         : 0
-      if (name === 'eth' && lastExpiryDate) {
+      if (name === 'lyx' && lastExpiryDate) {
         lastExpiryDate += GRACE_PERIOD_SECONDS
       }
 
@@ -176,7 +175,7 @@ const getSubnames = async (
         {
           resolver_not: null,
         },
-        ...(name.toLowerCase() === 'eth'
+        ...(name.toLowerCase() === 'lyx'
           ? [
               {
                 registrant_not: EMPTY_ADDRESS,
@@ -224,15 +223,11 @@ const getSubnames = async (
           registration {
             ...RegistrationDetails
           }
-          wrappedDomain {
-            ...WrappedDomainDetails
-          }
         }
       }
     }
     ${domainDetailsWithoutParentFragment}
     ${registrationDetailsFragment}
-    ${wrappedDomainDetailsFragment}
   `
 
   const queryVars = {

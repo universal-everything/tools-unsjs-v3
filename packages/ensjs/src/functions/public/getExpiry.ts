@@ -12,7 +12,6 @@ import {
 import type { ClientWithEns } from '../../contracts/consts.js'
 import { getChainContractAddress } from '../../contracts/getChainContractAddress.js'
 import { multicallGetCurrentBlockTimestampSnippet } from '../../contracts/multicall.js'
-import { nameWrapperGetDataSnippet } from '../../contracts/nameWrapper.js'
 import type {
   DateWithValue,
   Prettify,
@@ -23,8 +22,6 @@ import {
   type GeneratedFunction,
 } from '../../utils/generateFunction.js'
 import { makeSafeSecondsDate } from '../../utils/makeSafeSecondsDate.js'
-import { namehash } from '../../utils/normalise.js'
-import { checkIsDotEth } from '../../utils/validation.js'
 import multicallWrapper from './multicallWrapper.js'
 
 type ContractOption = 'registrar' | 'nameWrapper'
@@ -46,24 +43,11 @@ export type GetExpiryReturnType = Prettify<{
   status: ExpiryStatus
 } | null>
 
-const getContractToUse = (
-  contract: ContractOption | undefined,
-  labels: string[],
-) => {
-  if (contract) return contract
-  if (checkIsDotEth(labels)) {
-    return 'registrar'
-  }
-  return 'nameWrapper'
-}
-
 const encode = (
   client: ClientWithEns,
-  { name, contract }: GetExpiryParameters,
+  { name }: GetExpiryParameters,
 ): SimpleTransactionRequest => {
   const labels = name.split('.')
-
-  const contractToUse = getContractToUse(contract, labels)
 
   const calls: SimpleTransactionRequest[] = [
     {
@@ -75,36 +59,25 @@ const encode = (
     },
   ]
 
-  if (contractToUse === 'nameWrapper') {
-    calls.push({
-      to: getChainContractAddress({ client, contract: 'ensNameWrapper' }),
-      data: encodeFunctionData({
-        abi: nameWrapperGetDataSnippet,
-        functionName: 'getData',
-        args: [BigInt(namehash(labels.join('.')))],
-      }),
-    })
-  } else {
-    const baseRegistrarImplementationAddress = getChainContractAddress({
-      client,
-      contract: 'ensBaseRegistrarImplementation',
-    })
-    calls.push({
-      to: baseRegistrarImplementationAddress,
-      data: encodeFunctionData({
-        abi: baseRegistrarNameExpiresSnippet,
-        functionName: 'nameExpires',
-        args: [BigInt(labelhash(labels[0]))],
-      }),
-    })
-    calls.push({
-      to: baseRegistrarImplementationAddress,
-      data: encodeFunctionData({
-        abi: baseRegistrarGracePeriodSnippet,
-        functionName: 'GRACE_PERIOD',
-      }),
-    })
-  }
+  const baseRegistrarImplementationAddress = getChainContractAddress({
+    client,
+    contract: 'ensBaseRegistrarImplementation',
+  })
+  calls.push({
+    to: baseRegistrarImplementationAddress,
+    data: encodeFunctionData({
+      abi: baseRegistrarNameExpiresSnippet,
+      functionName: 'nameExpires',
+      args: [labelhash(labels[0])],
+    }),
+  })
+  calls.push({
+    to: baseRegistrarImplementationAddress,
+    data: encodeFunctionData({
+      abi: baseRegistrarGracePeriodSnippet,
+      functionName: 'GRACE_PERIOD',
+    }),
+  })
 
   return multicallWrapper.encode(client, { transactions: calls })
 }
@@ -112,10 +85,8 @@ const encode = (
 const decode = async (
   client: ClientWithEns,
   data: Hex | BaseError,
-  { name, contract }: GetExpiryParameters,
 ): Promise<GetExpiryReturnType> => {
   if (typeof data === 'object') throw data
-  const labels = name.split('.')
   const result = await multicallWrapper.decode(client, data, [])
 
   const blockTimestamp = decodeFunctionResult({
@@ -124,29 +95,18 @@ const decode = async (
     data: result[0].returnData,
   })
 
-  const contractToUse = getContractToUse(contract, labels)
-
-  let expiry: bigint
   let gracePeriod: bigint = 0n
 
-  if (contractToUse === 'nameWrapper') {
-    ;[, , expiry] = decodeFunctionResult({
-      abi: nameWrapperGetDataSnippet,
-      functionName: 'getData',
-      data: result[1].returnData,
-    })
-  } else {
-    expiry = decodeFunctionResult({
-      abi: baseRegistrarNameExpiresSnippet,
-      functionName: 'nameExpires',
-      data: result[1].returnData,
-    })
-    gracePeriod = decodeFunctionResult({
-      abi: baseRegistrarGracePeriodSnippet,
-      functionName: 'GRACE_PERIOD',
-      data: result[2].returnData,
-    })
-  }
+  const expiry = decodeFunctionResult({
+    abi: baseRegistrarNameExpiresSnippet,
+    functionName: 'nameExpires',
+    data: result[1].returnData,
+  })
+  gracePeriod = decodeFunctionResult({
+    abi: baseRegistrarGracePeriodSnippet,
+    functionName: 'GRACE_PERIOD',
+    data: result[2].returnData,
+  })
 
   if (expiry === 0n) {
     return null
