@@ -84,11 +84,6 @@ export {
   type GetTextRecordReturnType,
 } from './functions/public/getTextRecord.js'
 export {
-  default as getWrapperData,
-  type GetWrapperDataParameters,
-  type GetWrapperDataReturnType,
-} from './functions/public/getWrapperData.js'
-export {
   default as multicallWrapper,
   type MulticallWrapperParameters,
   type MulticallWrapperReturnType,
