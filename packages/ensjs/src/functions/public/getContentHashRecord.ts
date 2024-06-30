@@ -1,7 +1,7 @@
-import type { BaseError, Hex } from 'viem'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import type { Hex } from 'viem'
 import type { ClientWithEns } from '../../contracts/consts.js'
 import type {
-  GenericPassthrough,
   Prettify,
   TransactionRequestWithPassthrough,
 } from '../../types.js'
@@ -13,7 +13,7 @@ import _getContentHash, {
   type InternalGetContentHashParameters,
   type InternalGetContentHashReturnType,
 } from './_getContentHash.js'
-import universalWrapper from './universalWrapper.js'
+import { getChainContractAddress } from '../../contracts/getChainContractAddress.js'
 
 export type GetContentHashRecordParameters = Prettify<
   InternalGetContentHashParameters & {
@@ -27,31 +27,23 @@ export type GetContentHashRecordReturnType =
 
 const encode = (
   client: ClientWithEns,
-  { name, gatewayUrls }: Omit<GetContentHashRecordParameters, 'strict'>,
+  { name }: Omit<GetContentHashRecordParameters, 'strict'>,
 ): TransactionRequestWithPassthrough => {
   const prData = _getContentHash.encode(client, { name })
-  return universalWrapper.encode(client, {
-    name,
-    data: prData.data,
-    gatewayUrls,
+  prData.to = getChainContractAddress({
+    client,
+    contract: 'ensUniversalResolver',
   })
+  return prData
 }
 
 const decode = async (
   client: ClientWithEns,
-  data: Hex | BaseError,
-  passthrough: GenericPassthrough,
-  {
-    strict,
-    gatewayUrls,
-  }: Pick<GetContentHashRecordParameters, 'strict' | 'gatewayUrls'>,
+  data: Hex,
+  { strict }: Pick<GetContentHashRecordParameters, 'strict' | 'gatewayUrls'>,
 ): Promise<GetContentHashRecordReturnType> => {
-  const urData = await universalWrapper.decode(client, data, passthrough, {
-    strict,
-    gatewayUrls,
-  })
-  if (!urData) return null
-  return _getContentHash.decode(client, urData.data, { strict })
+  if (!data) return null
+  return _getContentHash.decode(client, data, { strict })
 }
 
 type BatchableFunctionObject = GeneratedFunction<typeof encode, typeof decode>

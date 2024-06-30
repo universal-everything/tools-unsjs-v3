@@ -82,10 +82,10 @@ export type AnyDate = string | number | bigint | Date
 
 export type RootName = ''
 export type TldName = `${string}`
-export type EthTldName = `eth`
-export type Eth2ldName = `${string}.eth`
+export type EthTldName = `lyx`
+export type Eth2ldName = `${string}.lyx`
 export type EthAnyName = EthTldName | Eth2ldName
-export type EthSubname = `${string}.${string}.eth`
+export type EthSubname = `${string}.${string}.lyx`
 export type Other2ldName = `${string}.${string}`
 export type OtherSubname = `${string}.${string}.${string}`
 

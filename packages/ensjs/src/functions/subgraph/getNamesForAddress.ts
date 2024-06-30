@@ -98,7 +98,7 @@ const getOrderByFilter = ({
       let lastExpiryDate = lastDomain.expiryDate?.value
         ? lastDomain.expiryDate.value / 1000
         : 0
-      if (lastDomain.parentName === 'eth') {
+      if (lastDomain.parentName === 'lyx') {
         lastExpiryDate += GRACE_PERIOD_SECONDS
       }
 

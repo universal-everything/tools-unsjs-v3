@@ -9,7 +9,6 @@ import {
 import { sendTransaction } from 'viem/actions'
 import type { ChainWithEns, ClientWithAccount } from '../../contracts/consts.js'
 import { getChainContractAddress } from '../../contracts/getChainContractAddress.js'
-import { nameWrapperSetResolverSnippet } from '../../contracts/nameWrapper.js'
 import { registrySetResolverSnippet } from '../../contracts/registry.js'
 import type {
   Prettify,
@@ -47,26 +46,15 @@ export const makeFunctionData = <
   wallet: ClientWithAccount<Transport, TChain, TAccount>,
   { name, contract, resolverAddress }: SetResolverDataParameters,
 ): SetResolverDataReturnType => {
-  if (contract !== 'registry' && contract !== 'nameWrapper')
-    throw new Error(`Unknown contract: ${contract}`)
+  if (contract !== 'registry') throw new Error(`Unknown contract: ${contract}`)
 
   const to = getChainContractAddress({
     client: wallet,
-    contract: contract === 'nameWrapper' ? 'ensNameWrapper' : 'ensRegistry',
+    contract: 'ensRegistry',
   })
 
   const args = [namehash(name), resolverAddress] as const
   const functionName = 'setResolver'
-
-  if (contract === 'nameWrapper')
-    return {
-      to,
-      data: encodeFunctionData({
-        abi: nameWrapperSetResolverSnippet,
-        functionName,
-        args,
-      }),
-    }
 
   return {
     to,

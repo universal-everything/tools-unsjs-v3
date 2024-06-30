@@ -9,10 +9,6 @@ import { sendTransaction } from 'viem/actions'
 import type { ChainWithEns, ClientWithAccount } from '../../contracts/consts.js'
 import { getChainContractAddress } from '../../contracts/getChainContractAddress.js'
 import {
-  nameWrapperSetRecordSnippet,
-  nameWrapperSetSubnodeRecordSnippet,
-} from '../../contracts/nameWrapper.js'
-import {
   registrySetRecordSnippet,
   registrySetSubnodeRecordSnippet,
 } from '../../contracts/registry.js'
@@ -88,7 +84,7 @@ export const makeFunctionData = <
         to: registryAddress,
         data: encodeFunctionData({
           abi: registrySetSubnodeRecordSnippet,
-          functionName: 'setSubnodeRecord',
+          functionName: 'setSubNameRecord',
           args: [
             parentNode,
             labelhash,
@@ -99,43 +95,10 @@ export const makeFunctionData = <
         }),
       }
     }
-    case 'nameWrapper': {
-      const nameWrapperAddress = getChainContractAddress({
-        client: wallet,
-        contract: 'ensNameWrapper',
-      })
-      if (asOwner)
-        return {
-          to: nameWrapperAddress,
-          data: encodeFunctionData({
-            abi: nameWrapperSetRecordSnippet,
-            functionName: 'setRecord',
-            args: [namehash(name), EMPTY_ADDRESS, EMPTY_ADDRESS, BigInt(0)],
-          }),
-        }
-
-      const { label, parentNode } = makeLabelNodeAndParent(name)
-      return {
-        to: nameWrapperAddress,
-        data: encodeFunctionData({
-          abi: nameWrapperSetSubnodeRecordSnippet,
-          functionName: 'setSubnodeRecord',
-          args: [
-            parentNode,
-            label,
-            EMPTY_ADDRESS,
-            EMPTY_ADDRESS,
-            BigInt(0),
-            0,
-            BigInt(0),
-          ],
-        }),
-      }
-    }
     default:
       throw new InvalidContractTypeError({
         contractType: contract,
-        supportedContractTypes: ['registry', 'nameWrapper'],
+        supportedContractTypes: ['registry'],
       })
   }
 }

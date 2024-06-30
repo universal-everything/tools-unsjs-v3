@@ -168,19 +168,15 @@ export const ethRegistrarControllerRegisterSnippet = [
         type: 'address',
       },
       {
-        name: 'data',
-        type: 'bytes[]',
+        name: 'resolvedAddress',
+        type: 'address',
       },
       {
         name: 'reverseRecord',
         type: 'bool',
       },
-      {
-        name: 'ownerControlledFuses',
-        type: 'uint16',
-      },
     ],
-    name: 'register',
+    name: 'registerWithConfig',
     outputs: [],
     stateMutability: 'payable',
     type: 'function',

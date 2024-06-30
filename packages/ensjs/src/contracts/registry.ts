@@ -42,7 +42,7 @@ export const registrySetSubnodeRecordSnippet = [
         type: 'uint64',
       },
     ],
-    name: 'setSubnodeRecord',
+    name: 'setSubNameRecord',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
@@ -60,7 +60,7 @@ export const registryResolverSnippet = [
     name: 'resolver',
     outputs: [
       {
-        name: '',
+        name: 'resolver',
         type: 'address',
       },
     ],
@@ -142,7 +142,7 @@ export const registrySetSubnodeOwnerSnippet = [
         type: 'address',
       },
     ],
-    name: 'setSubnodeOwner',
+    name: 'setSubNameOwner',
     outputs: [
       {
         name: '',

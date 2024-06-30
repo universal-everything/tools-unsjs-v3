@@ -3,13 +3,11 @@ import {
   decodeFunctionResult,
   encodeFunctionData,
   getContractError,
-  toHex,
   type Address,
   type Hex,
 } from 'viem'
 import type { ClientWithEns } from '../../contracts/consts.js'
 import { getChainContractAddress } from '../../contracts/getChainContractAddress.js'
-import { universalResolverFindResolverSnippet } from '../../contracts/universalResolver.js'
 import type {
   GenericPassthrough,
   TransactionRequestWithPassthrough,
@@ -19,7 +17,8 @@ import {
   generateFunction,
   type GeneratedFunction,
 } from '../../utils/generateFunction.js'
-import { packetToBytes } from '../../utils/hexEncodedName.js'
+import { registryResolverSnippet } from '../../contracts/registry.js'
+import { namehash as makeNamehash } from '../../utils/normalise.js'
 
 export type GetResolverParameters = {
   /** Name to get resolver for */
@@ -28,47 +27,48 @@ export type GetResolverParameters = {
 
 export type GetResolverReturnType = Address | null
 
-const encode = (
+export const encode = (
   client: ClientWithEns,
   { name }: GetResolverParameters,
 ): TransactionRequestWithPassthrough => {
   const address = getChainContractAddress({
     client,
-    contract: 'ensUniversalResolver',
+    contract: 'ensRegistry',
   })
-  const args = [toHex(packetToBytes(name))] as const
+  const namehash = makeNamehash(name)
+  const args = [namehash] as const
   return {
     to: address,
     data: encodeFunctionData({
-      abi: universalResolverFindResolverSnippet,
-      functionName: 'findResolver',
+      abi: registryResolverSnippet,
+      functionName: 'resolver',
       args,
     }),
     passthrough: { address, args },
   }
 }
 
-const decode = async (
+export const decode = async (
   _client: ClientWithEns,
   data: Hex | BaseError,
-  passthrough: GenericPassthrough,
+  passthrough: GenericPassthrough | undefined,
 ): Promise<GetResolverReturnType> => {
   if (typeof data === 'object')
     throw getContractError(data, {
-      abi: universalResolverFindResolverSnippet,
-      functionName: 'findResolver',
-      args: passthrough.args,
-      address: passthrough.address,
+      abi: registryResolverSnippet,
+      functionName: 'resolver',
+      args: passthrough?.args,
+      address: passthrough?.address,
     }) as BaseError
   const response = decodeFunctionResult({
-    abi: universalResolverFindResolverSnippet,
-    functionName: 'findResolver',
+    abi: registryResolverSnippet,
+    functionName: 'resolver',
     data,
   })
 
-  if (response[0] === EMPTY_ADDRESS) return null
+  if (response === EMPTY_ADDRESS) return null
 
-  return response[0]
+  return response
 }
 
 type BatchableFunctionObject = GeneratedFunction<typeof encode, typeof decode>

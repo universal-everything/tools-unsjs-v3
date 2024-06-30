@@ -1,19 +1,15 @@
 import {
-  BaseError,
   decodeAbiParameters,
   decodeFunctionResult,
   encodeFunctionData,
   hexToBigInt,
-  toHex,
   type Address,
   type Hex,
 } from 'viem'
 import type { ClientWithEns } from '../../contracts/consts.js'
 import { getChainContractAddress } from '../../contracts/getChainContractAddress.js'
-import {
-  universalResolverResolveArraySnippet,
-  universalResolverResolveArrayWithGatewaysSnippet,
-} from '../../contracts/universalResolver.js'
+import { namehash } from '../../utils/normalise.js'
+import { publicResolverMulticallWithResolverSnippet } from '../../contracts/publicResolver.js'
 import type {
   DecodedAddr,
   DecodedText,
@@ -21,10 +17,7 @@ import type {
   SimpleTransactionRequest,
   TransactionRequestWithPassthrough,
 } from '../../types.js'
-import { checkSafeUniversalResolverData } from '../../utils/checkSafeUniversalResolverData.js'
-import { EMPTY_ADDRESS } from '../../utils/consts.js'
 import { generateFunction } from '../../utils/generateFunction.js'
-import { packetToBytes } from '../../utils/hexEncodedName.js'
 import _getAbi, { type InternalGetAbiReturnType } from './_getAbi.js'
 import _getAddr from './_getAddr.js'
 import _getContentHash, {
@@ -178,15 +171,7 @@ const createCalls = (
 
 const encode = (
   client: ClientWithEns,
-  {
-    name,
-    resolver,
-    texts,
-    coins,
-    contentHash,
-    abi,
-    gatewayUrls,
-  }: GetRecordsParameters,
+  { name, resolver, texts, coins, contentHash, abi }: GetRecordsParameters,
 ): EncodeReturnType => {
   const calls = createCalls(client, {
     name,
@@ -213,38 +198,15 @@ const encode = (
     client,
     contract: 'ensUniversalResolver',
   })
-  const args = [
-    toHex(packetToBytes(name)),
-    calls.map((c) => c.call.data),
-  ] as const
 
   return {
     to,
-    ...(gatewayUrls
-      ? {
-          data: encodeFunctionData({
-            abi: universalResolverResolveArrayWithGatewaysSnippet,
-            functionName: 'resolve',
-            args: [...args, gatewayUrls] as const,
-          }),
-          passthrough: {
-            calls,
-            args: [...args, gatewayUrls],
-            address: to,
-          },
-        }
-      : {
-          data: encodeFunctionData({
-            abi: universalResolverResolveArraySnippet,
-            functionName: 'resolve',
-            args,
-          }),
-          passthrough: {
-            calls,
-            args,
-            address: to,
-          },
-        }),
+    data: encodeFunctionData({
+      abi: publicResolverMulticallWithResolverSnippet,
+      functionName: 'multicallWithResolver',
+      args: [namehash(name), calls.map((c) => c.call.data)],
+    }),
+    passthrough: { calls },
   }
 }
 
@@ -357,7 +319,7 @@ const decode = async <
   const TAbi extends boolean | undefined = undefined,
 >(
   client: ClientWithEns,
-  data: Hex | BaseError,
+  data: Hex,
   passthrough: EncodeReturnType['passthrough'],
   {
     resolver,
@@ -365,7 +327,6 @@ const decode = async <
     coins,
     contentHash,
     abi,
-    gatewayUrls,
   }: GetRecordsParameters<TTexts, TCoins, TContentHash, TAbi>,
 ): Promise<GetRecordsReturnType<TTexts, TCoins, TContentHash, TAbi>> => {
   const { calls } = passthrough
@@ -383,34 +344,29 @@ const decode = async <
     resolverAddress = resolver.address
     recordData = result.map((r) => r.returnData)
   } else {
-    const isSafe = checkSafeUniversalResolverData(data, {
-      strict: false,
-      abi: gatewayUrls
-        ? universalResolverResolveArrayWithGatewaysSnippet
-        : universalResolverResolveArraySnippet,
-      args: passthrough.args,
-      functionName: 'resolve',
-      address: passthrough.address,
-    })
+    // const isSafe = checkSafeUniversalResolverData(data, {
+    //   strict: false,
+    //   abi: gatewayUrls
+    //     ? universalResolverResolveArrayWithGatewaysSnippet
+    //     : universalResolverResolveArraySnippet,
+    //   args: passthrough.args,
+    //   functionName: 'resolve',
+    //   address: passthrough.address,
+    // })
 
-    if (!isSafe)
-      return {
-        ...emptyResult,
-        resolverAddress: EMPTY_ADDRESS,
-      } as GetRecordsReturnType<TTexts, TCoins, TContentHash, TAbi>
-
+    // if (!isSafe)
+    //   return {
+    //     ...emptyResult,
+    //     resolverAddress: EMPTY_ADDRESS,
+    //   } as GetRecordsReturnType<TTexts, TCoins, TContentHash, TAbi>
     const result = decodeFunctionResult({
-      abi: universalResolverResolveArraySnippet,
-      functionName: 'resolve',
+      abi: publicResolverMulticallWithResolverSnippet,
+      functionName: 'multicallWithResolver',
       data,
     })
-    ;[, resolverAddress] = result
-    recordData = result[0].map((item, i) => {
-      if (!item.success) {
-        calls[i] = null
-        return null
-      }
-      return item.returnData
+    ;[resolverAddress] = result
+    recordData = result[1].map((item) => {
+      return item
     })
   }
 

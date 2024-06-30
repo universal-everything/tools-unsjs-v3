@@ -67,7 +67,7 @@ export const makeFunctionData = <
     }),
     data: encodeFunctionData({
       abi: ethRegistrarControllerRegisterSnippet,
-      functionName: 'register',
+      functionName: 'registerWithConfig',
       args: makeRegistrationTuple(args),
     }),
     value,
@@ -126,9 +126,8 @@ async function registerName<
     duration,
     secret,
     resolverAddress,
-    records,
+    resolvedAddress,
     reverseRecord,
-    fuses,
     value,
     ...txArgs
   }: RegisterNameParameters<TChain, TAccount, TChainOverride>,
@@ -139,9 +138,8 @@ async function registerName<
     duration,
     secret,
     resolverAddress,
-    records,
+    resolvedAddress,
     reverseRecord,
-    fuses,
     value,
   })
   const writeArgs = {

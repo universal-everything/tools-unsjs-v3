@@ -9,16 +9,9 @@ import {
 } from 'viem'
 import { sendTransaction } from 'viem/actions'
 import { parseAccount } from 'viem/utils'
-import {
-  baseRegistrarReclaimSnippet,
-  baseRegistrarSafeTransferFromSnippet,
-} from '../../contracts/baseRegistrar.js'
+import { baseRegistrarTransfeSnippet } from '../../contracts/baseRegistrar.js'
 import type { ChainWithEns, ClientWithAccount } from '../../contracts/consts.js'
 import { getChainContractAddress } from '../../contracts/getChainContractAddress.js'
-import {
-  nameWrapperSafeTransferFromSnippet,
-  nameWrapperSetSubnodeOwnerSnippet,
-} from '../../contracts/nameWrapper.js'
 import {
   registrySetOwnerSnippet,
   registrySetSubnodeOwnerSnippet,
@@ -43,7 +36,7 @@ type BaseTransferNameDataParameters = {
   /** Transfer recipient */
   newOwnerAddress: Address
   /** Contract to use for transfer */
-  contract: 'registry' | 'nameWrapper' | 'registrar'
+  contract: 'registry' | 'registrar'
   /** Reclaim ownership as registrant (registrar only) */
   reclaim?: boolean
   /** Transfer name as the parent owner */
@@ -51,13 +44,12 @@ type BaseTransferNameDataParameters = {
 }
 
 type RegistryOrNameWrapperTransferNameDataParameters = {
-  contract: 'registry' | 'nameWrapper'
+  contract: 'registry'
   reclaim?: never
 }
 
 type BaseRegistrarTransferNameDataParameters = {
   contract: 'registrar'
-  reclaim?: boolean
   asParent?: never
 }
 
@@ -85,21 +77,8 @@ export const makeFunctionData = <
   TAccount extends Account,
 >(
   wallet: ClientWithAccount<Transport, TChain, TAccount>,
-  {
-    name,
-    newOwnerAddress,
-    contract,
-    reclaim,
-    asParent,
-  }: TransferNameDataParameters,
+  { name, newOwnerAddress, contract, asParent }: TransferNameDataParameters,
 ): TransferNameDataReturnType => {
-  if (reclaim && contract !== 'registrar')
-    throw new AdditionalParameterSpecifiedError({
-      parameter: 'reclaim',
-      allowedParameters: ['name', 'newOwnerAddress', 'contract'],
-      details:
-        "Can't reclaim a name from any contract other than the registrar",
-    })
   switch (contract) {
     case 'registry': {
       const registryAddress = getChainContractAddress({
@@ -113,7 +92,7 @@ export const makeFunctionData = <
           to: registryAddress,
           data: encodeFunctionData({
             abi: registrySetSubnodeOwnerSnippet,
-            functionName: 'setSubnodeOwner',
+            functionName: 'setSubNameOwner',
             args: [parentNode, labelhashId, newOwnerAddress],
           }),
         }
@@ -143,60 +122,23 @@ export const makeFunctionData = <
             'Only eth-2ld names can be transferred on the registrar contract',
         })
       const labels = name.split('.')
-      const tokenId = BigInt(labelhash(labels[0]))
+      const tokenId = labelhash(labels[0])
       return {
         to: getChainContractAddress({
           client: wallet,
           contract: 'ensBaseRegistrarImplementation',
         }),
-        data: reclaim
-          ? encodeFunctionData({
-              abi: baseRegistrarReclaimSnippet,
-              functionName: 'reclaim',
-              args: [tokenId, newOwnerAddress],
-            })
-          : encodeFunctionData({
-              abi: baseRegistrarSafeTransferFromSnippet,
-              functionName: 'safeTransferFrom',
-              args: [wallet.account.address, newOwnerAddress, tokenId],
-            }),
-      }
-    }
-    case 'nameWrapper': {
-      const nameWrapperAddress = getChainContractAddress({
-        client: wallet,
-        contract: 'ensNameWrapper',
-      })
-      if (asParent) {
-        const { label, parentNode } = makeLabelNodeAndParent(name)
-        return {
-          to: nameWrapperAddress,
-          data: encodeFunctionData({
-            abi: nameWrapperSetSubnodeOwnerSnippet,
-            functionName: 'setSubnodeOwner',
-            args: [parentNode, label, newOwnerAddress, 0, BigInt(0)],
-          }),
-        }
-      }
-      return {
-        to: nameWrapperAddress,
         data: encodeFunctionData({
-          abi: nameWrapperSafeTransferFromSnippet,
-          functionName: 'safeTransferFrom',
-          args: [
-            wallet.account.address,
-            newOwnerAddress,
-            BigInt(namehash(name)),
-            BigInt(1),
-            '0x',
-          ],
+          abi: baseRegistrarTransfeSnippet,
+          functionName: 'transfer',
+          args: [wallet.account.address, newOwnerAddress, tokenId, true, '0x'],
         }),
       }
     }
     default:
       throw new InvalidContractTypeError({
         contractType: contract,
-        supportedContractTypes: ['registry', 'registrar', 'nameWrapper'],
+        supportedContractTypes: ['registry', 'registrar'],
       })
   }
 }

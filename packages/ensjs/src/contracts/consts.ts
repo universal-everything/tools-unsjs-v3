@@ -6,14 +6,11 @@ type ChainContract = {
   blockCreated?: number
 }
 
-export const supportedChains = [1, 5, 17000, 11155111] as const
+export const supportedChains = [4201] as const
 export const supportedContracts = [
   'ensBaseRegistrarImplementation',
   'ensBulkRenewal',
-  'ensDnsRegistrar',
-  'ensDnssecImpl',
   'ensEthRegistrarController',
-  'ensNameWrapper',
   'ensPublicResolver',
   'ensRegistry',
   'ensReverseRegistrar',
@@ -24,132 +21,27 @@ export type SupportedChain = (typeof supportedChains)[number]
 export type SupportedContract = (typeof supportedContracts)[number]
 
 export const addresses = {
-  1: {
+  4201: {
     ensBaseRegistrarImplementation: {
-      address: '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85',
+      address: '0x1c295D9F10d6Ca6FFBF5c71Edc03ef4dFB06a3B9',
     },
     ensBulkRenewal: {
-      address: '0xa12159e5131b1eEf6B4857EEE3e1954744b5033A',
-    },
-    ensDnsRegistrar: {
-      address: '0xB32cB5677a7C971689228EC835800432B339bA2B',
-    },
-    ensDnssecImpl: {
-      address: '0x0fc3152971714E5ed7723FAFa650F86A4BaF30C5',
+      address: '0x0c2B553C23f23A8612ae40FA097c8803bC2bd9eA',
     },
     ensEthRegistrarController: {
-      address: '0x253553366Da8546fC250F225fe3d25d0C782303b',
-    },
-    ensNameWrapper: {
-      address: '0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401',
+      address: '0xbF15DE6e136fC13A79f8D59206f2BF12e12c4632',
     },
     ensPublicResolver: {
-      address: '0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63',
+      address: '0x40Ff65b86376A9912Ef5Ec7fecfAEbec5C2F2AB7',
     },
     ensRegistry: {
-      address: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
+      address: '0x648497a80c0499BEb5e18965Ba45c9A8B809EB4e',
     },
     ensReverseRegistrar: {
-      address: '0xa58E81fe9b61B5c3fE2AFD33CF304c454AbFc7Cb',
+      address: '0xE4a54a910d755f45557b8177e547497161823D25',
     },
     ensUniversalResolver: {
-      address: '0xce01f8eee7E479C928F8919abD53E553a36CeF67',
-    },
-  },
-  5: {
-    ensBaseRegistrarImplementation: {
-      address: '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85',
-    },
-    ensBulkRenewal: {
-      address: '0x6d9F26FfBcF1c6f0bAe9F2C1f7fBe8eE6B1d8d4d',
-    },
-    ensDnsRegistrar: {
-      address: '0x8edc487D26F6c8Fa76e032066A3D4F87E273515d',
-    },
-    ensDnssecImpl: {
-      address: '0xF427c4AdED8B6dfde604865c1a7E953B160C26f0',
-    },
-    ensEthRegistrarController: {
-      address: '0xCc5e7dB10E65EED1BBD105359e7268aa660f6734',
-    },
-    ensNameWrapper: {
-      address: '0x114D4603199df73e7D157787f8778E21fCd13066',
-    },
-    ensPublicResolver: {
-      address: '0xd7a4F6473f32aC2Af804B3686AE8F1932bC35750',
-    },
-    ensRegistry: {
-      address: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
-    },
-    ensReverseRegistrar: {
-      address: '0x6d9F26FfBcF1c6f0bAe9F2C1f7fBe8eE6B1d8d4d',
-    },
-    ensUniversalResolver: {
-      address: '0x898A1182F3C2BBBF0b16b4DfEf63E9c3e9eB4821',
-    },
-  },
-  17000: {
-    ensBaseRegistrarImplementation: {
-      address: '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85',
-    },
-    ensBulkRenewal: {
-      address: '0xbc4cfB363F948E64Cd73Da6438F64CB37E2e33d1',
-    },
-    ensDnsRegistrar: {
-      address: '0x458d278AEd4cE82BAeC384170f39198b01B8351c',
-    },
-    ensDnssecImpl: {
-      address: '0x283af0b28c62c092c9727f1ee09c02ca627eb7f5',
-    },
-    ensEthRegistrarController: {
-      address: '0x179Be112b24Ad4cFC392eF8924DfA08C20Ad8583',
-    },
-    ensNameWrapper: {
-      address: '0xab50971078225D365994dc1Edcb9b7FD72Bb4862',
-    },
-    ensPublicResolver: {
-      address: '0x9010A27463717360cAD99CEA8bD39b8705CCA238',
-    },
-    ensRegistry: {
-      address: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
-    },
-    ensReverseRegistrar: {
-      address: '0x132AC0B116a73add4225029D1951A9A707Ef673f',
-    },
-    ensUniversalResolver: {
-      address: '0xa6ac935d4971e3cd133b950ae053becd16fe7f3b',
-    },
-  },
-  11155111: {
-    ensBaseRegistrarImplementation: {
-      address: '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85',
-    },
-    ensBulkRenewal: {
-      address: '0x4EF77b90762Eddb33C8Eba5B5a19558DaE53D7a1',
-    },
-    ensDnsRegistrar: {
-      address: '0x5a07C75Ae469Bf3ee2657B588e8E6ABAC6741b4f',
-    },
-    ensDnssecImpl: {
-      address: '0xe62E4b6cE018Ad6e916fcC24545e20a33b9d8653',
-    },
-    ensEthRegistrarController: {
-      address: '0xFED6a969AaA60E4961FCD3EBF1A2e8913ac65B72',
-    },
-    ensNameWrapper: {
-      address: '0x0635513f179D50A207757E05759CbD106d7dFcE8',
-    },
-    ensPublicResolver: {
-      address: '0x8FADE66B79cC9f707aB26799354482EB93a5B7dD',
-    },
-    ensRegistry: {
-      address: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
-    },
-    ensReverseRegistrar: {
-      address: '0xA0a1AbcDAe1a2a4A2EF8e9113Ff0e02DD81DC0C6',
-    },
-    ensUniversalResolver: {
-      address: '0xc8af999e38273d658be1b921b88a9ddf005769cc',
+      address: '0x81FDA4082c54871a525Cca24947fbeEbB036EaCE',
     },
   },
 } as const satisfies Record<
@@ -164,37 +56,19 @@ type Subgraphs = {
 }
 
 export const subgraphs = {
-  1: {
+  4201: {
     ens: {
-      url: 'https://api.thegraph.com/subgraphs/name/ensdomains/ens',
-    },
-  },
-  5: {
-    ens: {
-      url: 'https://api.thegraph.com/subgraphs/name/ensdomains/ensgoerli',
-    },
-  },
-  17000: {
-    ens: {
-      url: 'https://api.studio.thegraph.com/query/49574/ensholesky/version/latest',
-    },
-  },
-  11155111: {
-    ens: {
-      url: 'https://api.studio.thegraph.com/query/49574/enssepolia/version/latest',
+      url: 'http://127.0.0.1:8000/subgraphs/name/graphprotocol/ens',
     },
   },
 } as const satisfies Record<SupportedChain, Subgraphs>
 
 type EnsChainContracts = {
   ensBaseRegistrarImplementation: ChainContract
-  ensDnsRegistrar: ChainContract
   ensEthRegistrarController: ChainContract
-  ensNameWrapper: ChainContract
   ensPublicResolver: ChainContract
   ensReverseRegistrar: ChainContract
   ensBulkRenewal: ChainContract
-  ensDnssecImpl: ChainContract
 }
 
 type BaseChainContracts = {

@@ -104,9 +104,8 @@ async function commitName<
     duration,
     secret,
     resolverAddress,
-    records,
+    resolvedAddress,
     reverseRecord,
-    fuses,
     ...txArgs
   }: CommitNameParameters<TChain, TAccount, TChainOverride>,
 ): Promise<CommitNameReturnType> {
@@ -116,9 +115,8 @@ async function commitName<
     duration,
     secret,
     resolverAddress,
-    records,
+    resolvedAddress,
     reverseRecord,
-    fuses,
   })
   const writeArgs = {
     ...data,

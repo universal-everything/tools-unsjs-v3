@@ -44,7 +44,7 @@ const encode = (
     data: encodeFunctionData({
       abi: baseRegistrarAvailableSnippet,
       functionName: 'available',
-      args: [BigInt(labelhash(labels[0]))],
+      args: [labelhash(labels[0])],
     }),
   }
 }

@@ -1,6 +1,5 @@
 import { BaseError, decodeAbiParameters, type Address, type Hex } from 'viem'
 import type { ClientWithEns } from '../../contracts/consts.js'
-import { getChainContractAddress } from '../../contracts/getChainContractAddress.js'
 import type { SimpleTransactionRequest } from '../../types.js'
 import { EMPTY_ADDRESS } from '../../utils/consts.js'
 import { generateFunction } from '../../utils/generateFunction.js'
@@ -27,7 +26,7 @@ type BaseGetOwnerReturnType = {
   /** Registrant of the name (registrar owner) */
   registrant?: Address | null
   /** The contract level that the ownership is on */
-  ownershipLevel: 'registry' | 'registrar' | 'nameWrapper'
+  ownershipLevel: 'registry' | 'registrar'
 }
 
 type RegistrarOnlyOwnership = {
@@ -75,12 +74,16 @@ const encode = <TContract extends OwnerContract | undefined = undefined>(
   const labels = name.split('.')
 
   if (contract || labels.length === 1) {
-    return ownerFromContract({
+    const contractData = ownerFromContract({
       client,
       contract: contract || 'registry',
       namehash,
       labels,
     })
+
+    const data: { to: Address; data: Hex }[] = [contractData]
+
+    return multicallWrapper.encode(client, { transactions: data })
   }
 
   const registryData = ownerFromContract({
@@ -88,13 +91,8 @@ const encode = <TContract extends OwnerContract | undefined = undefined>(
     contract: 'registry',
     namehash,
   })
-  const nameWrapperData = ownerFromContract({
-    client,
-    contract: 'nameWrapper',
-    namehash,
-  })
 
-  const data: { to: Address; data: Hex }[] = [registryData, nameWrapperData]
+  const data: { to: Address; data: Hex }[] = [registryData]
 
   if (checkIsDotEth(labels)) {
     data.push(ownerFromContract({ client, contract: 'registrar', labels }))
@@ -114,7 +112,15 @@ const decode = async <TContract extends OwnerContract | undefined = undefined>(
   if (typeof data === 'object') throw data
   const labels = name.split('.')
   if (contract || labels.length === 1) {
-    const singleOwner = addressDecode(data)
+    const result = await multicallWrapper.decode(client, data, [])
+    const [singleOwner] = [result[0].returnData].map(
+      (ret) =>
+        ret &&
+        (ret !== '0x' ? addressDecode(ret) : undefined) &&
+        (ret.length === 74 ? undefined : addressDecode(ret)),
+    ) as [Address | undefined]
+
+    if (singleOwner === undefined || singleOwner === EMPTY_ADDRESS) return null
     if (contract === 'registrar') {
       return {
         ownershipLevel: 'registrar',
@@ -129,31 +135,18 @@ const decode = async <TContract extends OwnerContract | undefined = undefined>(
 
   const result = await multicallWrapper.decode(client, data, [])
 
-  const [registryOwner, nameWrapperOwner, registrarOwner] = [
+  const [registryOwner, registrarOwner] = [
     result[0].returnData,
-    result[1].returnData,
-    result[2]?.returnData,
-  ].map((ret) => (ret && ret !== '0x' ? addressDecode(ret) : undefined)) as [
-    Address,
-    Address,
-    Address | undefined,
-  ]
-
-  const nameWrapperAddress = getChainContractAddress({
-    client,
-    contract: 'ensNameWrapper',
-  })
+    result[1]?.returnData,
+  ].map(
+    (ret) =>
+      ret &&
+      (ret !== '0x' ? addressDecode(ret) : undefined) &&
+      (ret.length === 74 ? undefined : addressDecode(ret)),
+  ) as [Address, Address | undefined]
 
   // check for only .eth names
-  if (labels[labels.length - 1] === 'eth') {
-    // if the owner on the registrar is the namewrapper, then the namewrapper owner is the owner
-    // there is no "registrant" for wrapped names
-    if (registrarOwner === nameWrapperAddress) {
-      return {
-        owner: nameWrapperOwner,
-        ownershipLevel: 'nameWrapper',
-      } as GetOwnerReturnType<TContract>
-    }
+  if (labels[labels.length - 1] === 'lyx') {
     // if there is a registrar owner, then it's not a subdomain but we have also passed the namewrapper clause
     // this means that it's an unwrapped second-level name
     // the registrant is the owner of the NFT
@@ -175,17 +168,6 @@ const decode = async <TContract extends OwnerContract | undefined = undefined>(
           ownershipLevel: 'registrar',
         } as GetOwnerReturnType<TContract>
       }
-      // this means that the subname is wrapped
-      if (
-        registryOwner === nameWrapperAddress &&
-        nameWrapperOwner &&
-        nameWrapperOwner !== EMPTY_ADDRESS
-      ) {
-        return {
-          owner: nameWrapperOwner,
-          ownershipLevel: 'nameWrapper',
-        } as GetOwnerReturnType<TContract>
-      }
       // unwrapped subnames do not have NFTs associated, so do not have a registrant
       return {
         owner: registryOwner,
@@ -194,21 +176,6 @@ const decode = async <TContract extends OwnerContract | undefined = undefined>(
     }
     // .eth names with no registrar owner are either unregistered or expired
     return null
-  }
-
-  // non .eth names inherit the owner from the registry
-  // there will only ever be an owner for non .eth names, not a registrant
-  // this is because for unwrapped names, there is no associated NFT
-  // and for wrapped names, owner and registrant are the same thing
-  if (
-    registryOwner === nameWrapperAddress &&
-    nameWrapperOwner &&
-    nameWrapperOwner !== EMPTY_ADDRESS
-  ) {
-    return {
-      owner: nameWrapperOwner,
-      ownershipLevel: 'nameWrapper',
-    } as GetOwnerReturnType<TContract>
   }
 
   // for unwrapped non .eth names, the owner is the registry owner

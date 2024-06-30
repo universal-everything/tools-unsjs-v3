@@ -1,10 +1,6 @@
-import type { BaseError, Hex } from 'viem'
+import type { Hex } from 'viem'
 import type { ClientWithEns } from '../../contracts/consts.js'
-import type {
-  GenericPassthrough,
-  Prettify,
-  SimpleTransactionRequest,
-} from '../../types.js'
+import type { Prettify, SimpleTransactionRequest } from '../../types.js'
 import {
   generateFunction,
   type GeneratedFunction,
@@ -13,7 +9,7 @@ import _getText, {
   type InternalGetTextParameters,
   type InternalGetTextReturnType,
 } from './_getText.js'
-import universalWrapper from './universalWrapper.js'
+import { getChainContractAddress } from '../../contracts/getChainContractAddress.js'
 
 export type GetTextRecordParameters = Prettify<
   InternalGetTextParameters & {
@@ -26,31 +22,23 @@ export type GetTextRecordReturnType = Prettify<InternalGetTextReturnType>
 
 const encode = (
   client: ClientWithEns,
-  { name, key, gatewayUrls }: Omit<GetTextRecordParameters, 'strict'>,
+  { name, key }: Omit<GetTextRecordParameters, 'strict'>,
 ): SimpleTransactionRequest => {
   const prData = _getText.encode(client, { name, key })
-  return universalWrapper.encode(client, {
-    name,
-    data: prData.data,
-    gatewayUrls,
+  prData.to = getChainContractAddress({
+    client,
+    contract: 'ensUniversalResolver',
   })
+  return prData
 }
 
 const decode = async (
   client: ClientWithEns,
-  data: Hex | BaseError,
-  passthrough: GenericPassthrough,
-  {
-    strict,
-    gatewayUrls,
-  }: Pick<GetTextRecordParameters, 'strict' | 'gatewayUrls'>,
+  data: Hex,
+  { strict }: Pick<GetTextRecordParameters, 'strict' | 'gatewayUrls'>,
 ): Promise<GetTextRecordReturnType> => {
-  const urData = await universalWrapper.decode(client, data, passthrough, {
-    strict,
-    gatewayUrls,
-  })
-  if (!urData) return null
-  return _getText.decode(client, urData.data, { strict })
+  if (!data) return null
+  return _getText.decode(client, data, { strict })
 }
 
 type BatchableFunctionObject = GeneratedFunction<typeof encode, typeof decode>
